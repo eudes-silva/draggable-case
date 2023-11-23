@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-type Position = { [key: string]: number };
+type Position = { [key: string]: string };
 
 interface Props {
   width: string;
@@ -10,7 +10,7 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   width: "1",
   height: "1",
-  position: () => ({ x: 0, y: 0 }),
+  position: () => ({ x: "100px", y: "0" }),
 });
 const xPosition = props.position.x;
 const yPosition = props.position.y;
