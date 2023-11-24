@@ -7,8 +7,8 @@ type Size = {
 };
 
 interface Props {
-  columns: Size;
-  rows: Size;
+  columns?: Size;
+  rows?: Size;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -37,7 +37,10 @@ const children = computed(() => Array(cols.value * rows.value).fill(0));
 <template>
   <div ref="grid" class="h-100vh overflow-hidden">
     <div
-      class="grid grid-template gap-3 p-3 w-full h-full bg-blue overflow-hidden pointer-events-none"
+      class="grid gap-3 p-3 w-full h-full bg-blue overflow-hidden pointer-events-none"
+      :style="{
+        gridTemplate: `repeat(${rows}, minmax(0,1fr)) / repeat(${cols}, minmax(0,1fr)) `,
+      }"
     >
       <div
         v-for="(_, index) in children"
@@ -46,15 +49,20 @@ const children = computed(() => Array(cols.value * rows.value).fill(0));
       ></div>
     </div>
     <div
-      class="grid grid-template absolute top-0 left-0 w-full h-full gap-3 p-3 overflow-hidden"
+      class="grid absolute top-0 left-0 w-full h-full gap-3 p-3 overflow-hidden"
+      :style="{
+        /*grid-template property specifies the size of every row in y-axis and every column in x-axis. 
+        its a shorthand for grid-template-rows / grid-template-columns
+        syntax:  height for each row / width for each column 
+        repeat css function syntax: repeat(number of times it should be repeated, what will be repeated)
+        minmax syntax: minmax(>= as relative or fixed values, <= as relative or fixed values)
+        */
+        gridTemplate: `repeat(${rows}, minmax(0,1fr)) / repeat(${cols}, minmax(0,1fr)) `,
+        '--columns': cols,
+        '--rows': rows,
+      }"
     >
       <slot></slot>
     </div>
   </div>
 </template>
-<style lang="scss" scoped>
-.grid-template {
-  grid-template-columns: repeat(v-bind(cols), minmax(0, 1fr));
-  grid-template-rows: repeat(v-bind(rows), minmax(0, 1fr));
-}
-</style>
