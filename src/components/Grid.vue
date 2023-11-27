@@ -12,8 +12,8 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  columns: () => ({ 600: 2, 900: 3, 1200: 4, 1600: 5 }),
-  rows: () => ({ 480: 2, 800: 3, 1024: 4, 1200: 5 }),
+  columns: () => ({}),
+  rows: () => ({}),
 });
 
 const grid = ref(null);
@@ -49,7 +49,7 @@ const children = computed(() => Array(cols.value * rows.value).fill(0));
       ></div>
     </div>
     <div
-      class="grid absolute top-0 left-0 w-full h-full gap-3 p-3 overflow-hidden"
+      class="grid gap-3 p-3 absolute top-0 left-0 w-full h-full overflow-hidden"
       :style="{
         /*grid-template property specifies the size of every row in y-axis and every column in x-axis. 
         its a shorthand for grid-template-rows / grid-template-columns
@@ -57,9 +57,8 @@ const children = computed(() => Array(cols.value * rows.value).fill(0));
         repeat css function syntax: repeat(number of times it should be repeated, what will be repeated)
         minmax syntax: minmax(>= as relative or fixed values, <= as relative or fixed values)
         */
-        gridTemplate: `repeat(${rows}, minmax(0,1fr)) / repeat(${cols}, minmax(0,1fr)) `,
-        '--columns': cols,
-        '--rows': rows,
+        gridTemplate: `repeat(${rows}, minmax(0,1fr)) / repeat(${cols}, max(0,1fr)) `,
+        // gridAutoFlow: 'row dense',
       }"
     >
       <slot></slot>
