@@ -15,7 +15,7 @@ withDefaults(defineProps<Props>(), {
 </script>
 <template>
   <div
-    class="w-full h-full rounded-lg overflow-hidden"
+    class="p-2 w-full h-full rounded-lg overflow-hidden"
     :style="{
       /*grid-area property specifies where to place a grid item(columns in x-axis and rows in y-axis). 
       its a shorthand for grid-row-start / grid-column-start / grid-row-end / grid-column-end (start and end are cells in grid)
@@ -24,12 +24,12 @@ withDefaults(defineProps<Props>(), {
       css var function syntax: var(get here css variables, fallback value)
       */
       gridArea: ` 
-      ${initialRowPositionY} / 
-      ${initialColPositionX} / 
-      span ${heightInRows} / 
+      min(${initialRowPositionY}, var(--rows,1)) / 
+      min(${initialColPositionX}, var(--columns,1)) / 
+      span min(${heightInRows}, var(--rows,1)) / 
       span ${widthInCols}`,
     }"
   >
-    <slot />
+    <slot></slot>
   </div>
 </template>

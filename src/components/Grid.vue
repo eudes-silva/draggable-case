@@ -12,8 +12,8 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  columns: () => ({}),
-  rows: () => ({}),
+  columns: () => ({ 600: 2, 900: 3, 1200: 4, 1600: 5 }),
+  rows: () => ({ 480: 2, 800: 3, 1024: 4, 1200: 5 }),
 });
 
 const grid = ref(null);
@@ -37,7 +37,7 @@ const children = computed(() => Array(cols.value * rows.value).fill(0));
 <template>
   <div ref="grid" class="h-100vh overflow-hidden">
     <div
-      class="grid gap-3 p-3 w-full h-full bg-blue overflow-hidden pointer-events-none"
+      class="grid p-3 w-full h-full bg-blue overflow-hidden pointer-events-none"
       :style="{
         gridTemplate: `repeat(${rows}, minmax(0,1fr)) / repeat(${cols}, minmax(0,1fr)) `,
       }"
@@ -45,20 +45,21 @@ const children = computed(() => Array(cols.value * rows.value).fill(0));
       <div
         v-for="(_, index) in children"
         :key="index"
-        class="bg-white/10 rounded-lg pointer-events-none"
+        class="bg-white/10 rounded-lg pointer-events-none m-2"
       ></div>
     </div>
     <div
-      class="grid gap-3 p-3 absolute top-0 left-0 w-full h-full overflow-hidden"
+      class="grid p-3 w-full h-full absolute top-0 left-0 overflow-hidden"
       :style="{
         /*grid-template property specifies the size of every row in y-axis and every column in x-axis. 
-        its a shorthand for grid-template-rows / grid-template-columns
-        syntax:  height for each row / width for each column 
-        repeat css function syntax: repeat(number of times it should be repeated, what will be repeated)
-        minmax syntax: minmax(>= as relative or fixed values, <= as relative or fixed values)
-        */
-        gridTemplate: `repeat(${rows}, minmax(0,1fr)) / repeat(${cols}, max(0,1fr)) `,
-        // gridAutoFlow: 'row dense',
+          its a shorthand for grid-template-rows / grid-template-columns
+          syntax:  height for each row / width for each column 
+          repeat css function syntax: repeat(number of times it should be repeated, what will be repeated)
+          minmax syntax: minmax(>= as relative or fixed values, <= as relative or fixed values)
+          */
+        gridTemplate: `repeat(${rows}, minmax(0,1fr)) / repeat(${cols}, minmax(0,1fr))`,
+        '--rows': rows,
+        '--columns': cols,
       }"
     >
       <slot></slot>
