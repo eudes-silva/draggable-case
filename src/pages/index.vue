@@ -2,115 +2,131 @@
 import { ref } from "vue";
 import GridCell from "@/components/GridCell.vue";
 import Grid from "@/components/Grid.vue";
-import { useElementBounding } from "@vueuse/core";
 import { useMouseInElement } from "@vueuse/core";
 
 const gridItems = ref([
   {
     id: 1,
-    x: 1,
-    y: 1,
-    width: 1,
-    height: 1,
+    startColumn: 1,
+    startRow: 1,
+    widthCols: 1,
+    heightRows: 1,
     bgColor: "bg-green200",
     name: "section 1",
   },
   {
     id: 2,
-    x: 2,
-    y: 1,
-    width: 2,
-    height: 1,
+    startColumn: 2,
+    startRow: 1,
+    widthCols: 1,
+    heightRows: 1,
     bgColor: "bg-orange200",
     name: "section 2",
   },
   {
     id: 3,
-    x: 1,
-    y: 2,
-    width: 1,
-    height: 1,
+    startColumn: 1,
+    startRow: 2,
+    widthCols: 1,
+    heightRows: 1,
     bgColor: "bg-yellow200",
     name: "section 3",
   },
   {
     id: 4,
-    x: 2,
-    y: 2,
-    width: 1,
-    height: 1,
+    startColumn: 2,
+    startRow: 2,
+    widthCols: 1,
+    heightRows: 1,
     bgColor: "bg-red200",
     name: "section 4",
   },
-  {
-    id: 5,
-  },
 ]);
-const isDraggable = ref(true);
-const draggedItemId = ref(0);
-const gridItemWidth = ref("");
-const gridItemHeight = ref("");
-const gridPositionProperty = ref("");
-const gridItemPositionProperty = ref("");
+
+const gridRef = ref(null);
+const isAllowedToDragId = ref(null as any);
+const draggedItemId = ref(null as any);
+const isOverPosition = ref(false);
+
+const gridItemWidth = ref(null as any);
+const gridItemHeight = ref(null as any);
+const gridItemPositionProperty = ref(null as any);
 const xPosition = ref(null as any);
 const yPosition = ref(null as any);
-const target = ref(null);
+
+function allowDragCell(cell: any) {
+  isAllowedToDragId.value = cell.id;
+  console.log(isAllowedToDragId.value);
+}
 
 function drag(event: any, item: any) {
   draggedItemId.value = item.id;
-  if (event.dataTransfer) {
-    event.dataTransfer.dropEffect = "move";
-    event.dataTransfer.effectAllowed = "move";
-    event.dataTransfer?.setData("text", event.target.id);
-    const { width, height } = useElementBounding(event.target);
-    gridItemWidth.value = `${width.value}px`;
-    gridItemHeight.value = `${height.value}px`;
-    gridPositionProperty.value = "relative";
+  isOverPosition.value = false;
+  if (isAllowedToDragId === draggedItemId) {
+    const { elementWidth, elementHeight } = useMouseInElement(event.target);
+    gridItemWidth.value = elementWidth.value;
+    gridItemHeight.value = elementHeight.value;
     gridItemPositionProperty.value = "fixed";
-    xPosition.value = `${elementX.value}px`;
-    yPosition.value = `${elementY.value}px`;
+    xPosition.value = `${elementX.value - gridItemWidth.value / 2}`;
+    yPosition.value = `${elementY.value - gridItemHeight.value / 2}`;
+    const img = new Image();
+    event.dataTransfer.setDragImage(img, 0, 0);
   }
 }
 
-const { elementX, elementY } = useMouseInElement(target);
+const { elementX, elementY } = useMouseInElement(gridRef);
 
-function allowDrop(event: any) {
+function move(event: any) {
   event.preventDefault();
-  xPosition.value = `${elementX.value}px`;
-  yPosition.value = `${elementY.value}px`;
+  // xPosition.value = `${elementX.value - gridItemWidth.value / 2}`;
+  // yPosition.value = `${elementY.value - gridItemHeight.value / 2}`;
 }
 
 function drop(event: any) {
   event.preventDefault();
-  const data = event.dataTransfer.getData("text", event.target.id);
-  event.target.appendChild(document.getElementById(data));
+  isOverPosition.value = true;
+}
+
+function getPosition(values: any) {
+  const { index, cols, rows } = values;
+  console.log(index, rows, cols);
+  gridItems.value = gridItems.value.map((item) => {
+    if (item.id === draggedItemId.value) {
+      item.startColumn = (index % cols) + 1;
+      item.startRow = Math.floor(index / cols) + 1;
+    }
+    return item;
+  });
+  draggedItemId.value = null;
+  gridItemPositionProperty.value = "";
+  isOverPosition.value = false;
 }
 </script>
 <template>
   <Grid
-    ref="target"
-    id="grid"
+    ref="gridRef"
+    :isOverPositionToDrop="isOverPosition"
     :columns="{ 600: 2, 900: 3, 1200: 4, 1600: 5 }"
     :rows="{ 480: 2, 800: 3, 1024: 4, 1200: 5 }"
-    @dragover="allowDrop($event)"
+    @dragover="move($event)"
     @drop="drop($event)"
-    :class="gridPositionProperty"
+    @getPosition="getPosition"
   >
     <GridCell
-      :draggable="isDraggable"
-      id="gridItem"
-      v-for="(item, index) in gridItems"
-      :key="index"
-      :initialColPositionX="item.x"
-      :widthInCols="item.width"
-      :initialRowPositionY="item.y"
-      :heightInRows="item.height"
+      @mouseover="allowDragCell(item)"
+      :draggable="item.id === isAllowedToDragId ? true : false"
+      v-for="item in gridItems"
+      :key="item.id"
+      :initialColPositionX="item.startColumn"
+      :widthInCols="item.widthCols"
+      :initialRowPositionY="item.startRow"
+      :heightInRows="item.heightRows"
       @dragstart="drag($event, item)"
       :style="{
-        width: `${gridItemWidth}`,
-        height: `${gridItemHeight}`,
-        top: `${yPosition}`,
-        left: `${xPosition}`,
+        width: `${gridItemWidth}px`,
+        height: `${gridItemHeight}px`,
+        top: `${yPosition}px`,
+        left: `${xPosition}px`,
         position: `${
           draggedItemId === item.id ? gridItemPositionProperty : ''
         }`,

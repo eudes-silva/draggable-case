@@ -27,7 +27,7 @@ withDefaults(defineProps<Props>(), {
       min(${initialRowPositionY}, var(--rows,1)) / 
       min(${initialColPositionX}, var(--columns,1)) / 
       span min(${heightInRows}, var(--rows,1)) / 
-      span ${widthInCols}`,
+      ${widthInCols === -1 ? '-1' : 'span ' + widthInCols}`,
     }"
   >
     <slot></slot>
