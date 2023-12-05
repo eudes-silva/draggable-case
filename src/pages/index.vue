@@ -56,21 +56,21 @@ const yPosition = ref(null as any);
 
 function allowDragCell(cell: any) {
   isAllowedToDragId.value = cell.id;
-  console.log(isAllowedToDragId.value);
 }
 
 function drag(event: any, item: any) {
   draggedItemId.value = item.id;
   isOverPosition.value = false;
+  // remove only if statement to remove ghost element --> check another comment in this file
   if (isAllowedToDragId === draggedItemId) {
+    const canvas = document.createElement("canvas");
+    event.dataTransfer.setDragImage(canvas, 0, 0);
     const { elementWidth, elementHeight } = useMouseInElement(event.target);
     gridItemWidth.value = elementWidth.value;
     gridItemHeight.value = elementHeight.value;
     gridItemPositionProperty.value = "fixed";
     xPosition.value = `${elementX.value - gridItemWidth.value / 2}`;
     yPosition.value = `${elementY.value - gridItemHeight.value / 2}`;
-    const img = new Image();
-    event.dataTransfer.setDragImage(img, 0, 0);
   }
 }
 
@@ -78,8 +78,8 @@ const { elementX, elementY } = useMouseInElement(gridRef);
 
 function move(event: any) {
   event.preventDefault();
-  // xPosition.value = `${elementX.value - gridItemWidth.value / 2}`;
-  // yPosition.value = `${elementY.value - gridItemHeight.value / 2}`;
+  // xPosition.value = `${elementX.value - gridItemWidth.value / 2}`; // uncomment this to remove ghost element
+  // yPosition.value = `${elementY.value - gridItemHeight.value / 2}`; // uncomment this to remove ghost element
 }
 
 function drop(event: any) {
@@ -88,8 +88,7 @@ function drop(event: any) {
 }
 
 function getPosition(values: any) {
-  const { index, cols, rows } = values;
-  console.log(index, rows, cols);
+  const { index, cols } = values;
   gridItems.value = gridItems.value.map((item) => {
     if (item.id === draggedItemId.value) {
       item.startColumn = (index % cols) + 1;
@@ -114,7 +113,7 @@ function getPosition(values: any) {
   >
     <GridCell
       @mouseover="allowDragCell(item)"
-      :draggable="item.id === isAllowedToDragId ? true : false"
+      :draggable="item.id === isAllowedToDragId"
       v-for="item in gridItems"
       :key="item.id"
       :initialColPositionX="item.startColumn"
