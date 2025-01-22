@@ -44,12 +44,12 @@ const gridItems = ref([
 ]);
 
 const gridRef = ref(null);
-const isAllowedToDragId = ref<number | null>(null);
-const draggedItemId = ref<number | null>(null);
+const isAllowedToDragId = ref<number | string | null>(null);
+const draggedItemId = ref<number | string | null>(null);
 const isOverPosition = ref<boolean>(false);
 
-const gridItemWidth = ref<number | null>(null);
-const gridItemHeight = ref<number | null>(null);
+const gridItemWidth = ref<number | string | null>(null);
+const gridItemHeight = ref<number | string | null>(null);
 const gridItemPositionProperty = ref<string | null>(null);
 const xPosition = ref<string | null>(null);
 const yPosition = ref<string | null>(null);
@@ -65,7 +65,7 @@ interface Cell {
 }
 
 function allowDragCell(cell: Cell) {
-  isAllowedToDragId.value = cell.id;
+  isAllowedToDragId.value = cell?.id;
 }
 
 function drag(event: Event, item: Cell) {
@@ -74,22 +74,22 @@ function drag(event: Event, item: Cell) {
   // if statement to remove ghost element --> check another comments about ghost element in this file
   if (isAllowedToDragId.value === draggedItemId.value) {
     const canvas = document.createElement("canvas");
-    event.dataTransfer.setDragImage(canvas, 0, 0);
-    const { elementWidth, elementHeight } = useMouseInElement(event.target);
+    (event as DragEvent).dataTransfer?.setDragImage(canvas, 0, 0);
+    const { elementWidth, elementHeight } = useMouseInElement(event.target as HTMLElement);
     gridItemWidth.value = elementWidth.value;
     gridItemHeight.value = elementHeight.value;
     gridItemPositionProperty.value = "fixed";
-    xPosition.value = `${elementX.value - gridItemWidth.value / 2}`;
-    yPosition.value = `${elementY.value - gridItemHeight.value / 2}`;
+    xPosition.value = `${Number(elementX.value) - Number(gridItemWidth.value) / 2}`;
+    yPosition.value = `${Number(elementY.value) - Number(gridItemHeight.value) / 2}`;
   }
 }
 
 const { elementX, elementY } = useMouseInElement(gridRef);
 
 function move(event: Event) {
-  event.preventDefault();
-  xPosition.value = `${elementX.value - gridItemWidth.value / 2}`; // removes ghost element
-  yPosition.value = `${elementY.value - gridItemHeight.value / 2}`; // removes ghost element
+  (event as DragEvent).preventDefault();
+  xPosition.value = `${Number(elementX.value) - Number(gridItemWidth.value) / 2}`; // removes ghost element
+  yPosition.value = `${Number(elementY.value) - Number(gridItemHeight.value) / 2}`; // removes ghost element
 }
 
 function drop(event: Event) {
@@ -107,8 +107,8 @@ function getPosition(values: positionValues) {
   const { index, cols } = values;
   gridItems.value = gridItems.value.map((item) => {
     if (item.id === draggedItemId.value) {
-      item.startColumn = (index % cols) + 1;
-      item.startRow = Math.floor(index / cols) + 1;
+      item.startColumn = (Number(index) % Number(cols)) + 1;
+      item.startRow = Math.floor(Number(index) / Number(cols)) + 1;
     }
     return item;
   });
